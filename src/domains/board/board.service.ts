@@ -27,7 +27,7 @@ export class BoardService {
     private boardCommercialRepository: BoardCommercialRepository,
   ) {}
   /**
-   * 게시판 다중 이미지 업로드
+   * 게시판 다중 이미지&영상 업로드
    * @param files 파일들
    */
   async createBoard(
@@ -52,18 +52,43 @@ export class BoardService {
       await this.boardImageRepository.save(mediaInfo);
     }
   }
+  /**
+   * 게시판 다중 이미지 & 영상 업로드
+   * @param files 파일들
+   */
+  async updateBoard(
+    boardIdx: number,
+    sequence: number,
+    file: Express.Multer.File,
+  ) {
+    let result;
+    const fileExtension = path.extname(file.originalname);
+    if (fileExtension === '.mp4' || fileExtension === '.mov') {
+      result = await this.videoFunction(file, boardIdx, sequence);
+    } else if (
+      fileExtension === '.jpg' ||
+      fileExtension === '.jpeg' ||
+      fileExtension === '.png'
+    ) {
+      result = await this.uploadBoardImages(file, boardIdx, sequence);
+    }
+    await this.boardImageRepository.save(result);
+  }
   videoFunction = async (mediaFile, boardIdx, sequence) => {
     try {
       let url;
-      const fileName = `${DateUtils.momentFile()}-${uuid.v4()}-${
-        mediaFile.originalname
-      }`;
+      let coverImgUrl;
+      const fileName = `${DateUtils.momentFile()}-${uuid.v4()}-${mediaFile.originalname.replace(
+        /\s/g,
+        '_',
+      )}`;
       const videoBuffer = mediaFile.buffer; //비디오 파일 버퍼
       const outputDir = '/Users/munjunho/Desktop/video'; //비디오 저장 폴더 경로
       const videoFolder = `${outputDir}/${fileName.replace(/\.[^/.]+$/, '')}`; //비디오가 저장될 폴더
       const videoBaseName = path.basename(fileName, path.extname(fileName));
       const videoPath = `${videoFolder}/${fileName}`;
       const outputPath = `${videoFolder}/${videoBaseName}.m3u8`;
+      const coverPhotoPath = `${videoFolder}/${videoBaseName}.jpg`;
       //1. 영상 저장할 폴더 생성
       await fs.mkdirSync(videoFolder);
       //2. 원본 영상 저장
@@ -76,6 +101,11 @@ export class BoardService {
         `ffmpeg -i ${videoPath} -hls_time 10 -hls_list_size 0 ${outputPath}`,
       );
 
+      // 4. 동영상 첫 번째 프레임 캡처하여 커버 사진 만들기
+      await executeFfmpeg(
+        `ffmpeg -i ${videoPath} -ss 00:00:00.001 -vframes 1 ${coverPhotoPath}`,
+      );
+
       const s3 = new S3({
         accessKeyId: process.env.AWS_ACECSS_KEY_ID,
         secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
@@ -83,7 +113,7 @@ export class BoardService {
       });
       const bucket = process.env.AWS_BUCKET_NAME;
       const files = fs.readdirSync(videoFolder);
-      //4. s3에 저장
+      //5. s3에 저장
       for (const fileName of files) {
         if (path.extname(fileName) === '.mp4') {
           continue; // Skip uploading MP4 files
@@ -98,6 +128,9 @@ export class BoardService {
         if (path.extname(fileName) === '.m3u8') {
           const result = await s3.upload(uploadParams).promise();
           url = result.Location;
+        } else if (path.extname(fileName) === '.jpg') {
+          const result = await s3.upload(uploadParams).promise();
+          coverImgUrl = result.Location;
         } else {
           await s3.upload(uploadParams).promise();
         }
@@ -105,8 +138,9 @@ export class BoardService {
       const image = new BoardImage();
       image.boardIdx = boardIdx;
       image.mediaSequence = sequence;
-      image.category = 'img';
+      image.category = 'video';
       image.path = url;
+      image.coverImgPath = coverImgUrl;
       return image;
       //return 'Video uploaded and converted successfully';
     } catch (err) {

@@ -39,7 +39,7 @@ export class Boardcontroller {
   ])
   @Post('/upload')
   @UseInterceptors(FilesInterceptor('files', 5))
-  async uploadVideo(
+  async uploadBoard(
     @Res() res,
     @Body() dto: { boardIdx: number; userIdx: number },
     @UploadedFiles() files: Express.Multer.File[],
@@ -48,6 +48,20 @@ export class Boardcontroller {
       dto.boardIdx,
       dto.userIdx,
       files,
+    );
+    return HttpResponse.created(res, { body: result });
+  }
+  @Post('/update')
+  @UseInterceptors(FileInterceptor('file'))
+  async updateBoard(
+    @Res() res,
+    @Body() dto: { boardIdx: number; sequence: number },
+    @UploadedFile() file: Express.Multer.File,
+  ) {
+    const result = await this.boardService.updateBoard(
+      dto.boardIdx,
+      dto.sequence,
+      file,
     );
     return HttpResponse.created(res, { body: result });
   }
