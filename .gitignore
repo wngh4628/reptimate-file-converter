@@ -1,0 +1,28 @@
+# AWS EC2 key-pair
+teamnova.pem
+
+# Logs
+log
+*.log
+npm-debug.log*
+
+# Dependency directories
+node_modules/
+jspm_packages/
+.vscode
+
+# dotenv environment variables file
+env
+.env.dev
+.env.prod
+/env
+
+# build
+dist/
+package-lock.json
+
+# test code file
+*.spec.ts
+
+#firebase-adminsdk
+firebase-adminsdk.json
