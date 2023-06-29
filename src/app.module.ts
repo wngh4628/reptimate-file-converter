@@ -33,8 +33,6 @@ import { BoardModule } from './domains/board/board.module';
     UserModule,
     AuthModule,
     BoardModule,
-    ScheduleModule.forRoot(),
-    // EventsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

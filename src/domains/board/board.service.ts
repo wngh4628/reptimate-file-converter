@@ -1,11 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { BoardRepository } from './repositories/board.repository';
-import { BoardCommentRepository } from './repositories/board-comment.repository';
 import { BoardImageRepository } from './repositories/board-image.repository';
-import { BoardReplyRepository } from './repositories/board-reply.repository';
-import { BoardBookmarkRepository } from './repositories/board-bookmark.repository';
-import { BoardCommercialRepository } from './repositories/board-commercial.repository';
-import { UserRepository } from '../user/repositories/user.repository';
 import { S3 } from 'aws-sdk'; // 필요한 경우 aws-sdk를 임포트합니다.
 import * as fs from 'fs-extra'; // Import fs-extra instead of fs
 import { promisify } from 'util';
@@ -17,64 +11,48 @@ import * as uuid from 'uuid';
 import DateUtils from 'src/utils/date-utils';
 @Injectable()
 export class BoardService {
-  constructor(
-    private boardRepository: BoardRepository,
-    private userRepository: UserRepository,
-    private boardImageRepository: BoardImageRepository,
-    private commentRepository: BoardCommentRepository,
-    private replyRepository: BoardReplyRepository,
-    private boardBookmarkRepository: BoardBookmarkRepository,
-    private boardCommercialRepository: BoardCommercialRepository,
-  ) {}
+  constructor(private boardImageRepository: BoardImageRepository) {}
   /**
    * 게시판 다중 이미지&영상 업로드
    * @param files 파일들
    */
-  async createBoard(
-    boardIdx: number,
-    userIdx: number,
-    files: Express.Multer.File[],
-  ) {
-    const mediaInfo = [];
+  async createBoard(files: Express.Multer.File[]) {
+    const s3Url = [];
     for (let i = 0; i < files.length; i++) {
       const fileExtension = path.extname(files[i].originalname);
       if (fileExtension === '.mp4' || fileExtension === '.mov') {
-        const result = await this.videoFunction(files[i], boardIdx, i);
-        mediaInfo.push(result);
+        const result = await this.videoFunction(files[i]);
+        s3Url.push(result);
       } else if (
         fileExtension === '.jpg' ||
         fileExtension === '.jpeg' ||
         fileExtension === '.png'
       ) {
-        const result = await this.uploadBoardImages(files[i], boardIdx, i);
-        mediaInfo.push(result);
+        const result = await this.uploadBoardImages(files[i]);
+        s3Url.push(result);
       }
-      await this.boardImageRepository.save(mediaInfo);
     }
+    return s3Url;
   }
   /**
    * 게시판 다중 이미지 & 영상 업로드
    * @param files 파일들
    */
-  async updateBoard(
-    boardIdx: number,
-    sequence: number,
-    file: Express.Multer.File,
-  ) {
+  async updateBoard(file: Express.Multer.File) {
     let result;
     const fileExtension = path.extname(file.originalname);
     if (fileExtension === '.mp4' || fileExtension === '.mov') {
-      result = await this.videoFunction(file, boardIdx, sequence);
+      result = await this.videoFunction(file);
     } else if (
       fileExtension === '.jpg' ||
       fileExtension === '.jpeg' ||
       fileExtension === '.png'
     ) {
-      result = await this.uploadBoardImages(file, boardIdx, sequence);
+      result = await this.uploadBoardImages(file);
     }
     await this.boardImageRepository.save(result);
   }
-  videoFunction = async (mediaFile, boardIdx, sequence) => {
+  videoFunction = async (mediaFile) => {
     try {
       let url;
       let coverImgUrl;
@@ -83,7 +61,8 @@ export class BoardService {
         '_',
       )}`;
       const videoBuffer = mediaFile.buffer; //비디오 파일 버퍼
-      const outputDir = '/Users/munjunho/Desktop/video'; //비디오 저장 폴더 경로
+      // const outputDir = process.env.VIDEOFOLDER; //비디오 저장 폴더 경로
+      const outputDir = '/Users/munjunho/Desktop/video';
       const videoFolder = `${outputDir}/${fileName.replace(/\.[^/.]+$/, '')}`; //비디오가 저장될 폴더
       const videoBaseName = path.basename(fileName, path.extname(fileName));
       const videoPath = `${videoFolder}/${fileName}`;
@@ -135,30 +114,26 @@ export class BoardService {
           await s3.upload(uploadParams).promise();
         }
       }
-      const image = new BoardImage();
-      image.boardIdx = boardIdx;
-      image.mediaSequence = sequence;
-      image.category = 'video';
-      image.path = url;
-      image.coverImgPath = coverImgUrl;
-      return image;
-      //return 'Video uploaded and converted successfully';
+      //6. S3에 올라갔던 모든 파일 삭제 처리
+      // eslint-disable-next-line @typescript-eslint/no-var-requires
+      const fsExtra = require('fs-extra');
+      await fsExtra.remove(videoFolder);
+
+      const video = new BoardImage();
+      video.category = 'video';
+      video.path = url;
+      video.coverImgPath = coverImgUrl;
+      return video;
     } catch (err) {
       console.error('Error during video upload:', err);
       throw err;
     }
   };
-  async uploadBoardImages(
-    file: Express.Multer.File,
-    boardIdx: number,
-    sequence: number,
-  ): Promise<BoardImage> {
+  async uploadBoardImages(file: Express.Multer.File): Promise<BoardImage> {
     const url = await mediaUpload(file, S3FolderName.BOARD);
-    const image = new BoardImage();
-    image.boardIdx = boardIdx;
-    image.mediaSequence = sequence;
-    image.category = 'img';
-    image.path = url;
-    return image;
+    const img = new BoardImage();
+    img.category = 'img';
+    img.path = url;
+    return img;
   }
 }
