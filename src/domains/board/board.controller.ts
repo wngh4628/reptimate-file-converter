@@ -5,9 +5,10 @@ import { BoardService } from './board.service';
 import {
   Body,
   Controller,
+  Param,
+  Patch,
   Post,
   Res,
-  UploadedFile,
   UploadedFiles,
   UseInterceptors,
 } from '@nestjs/common';
@@ -19,6 +20,8 @@ import { ApiErrorResponseTemplate } from 'src/core/swagger/apt-error-response';
 import { StatusCodes } from 'http-status-codes';
 import { HttpErrorConstants } from 'src/core/http/http-error-objects';
 import HttpResponse from 'src/core/http/http-response';
+import { UpdateBoardDto } from './dtos/update-board.dto';
+import UseAuthGuards from '../auth/auth-guards/use-auth';
 
 @ApiTags(SwaggerTag.BOARD)
 @ApiCommonErrorResponseTemplate()
@@ -43,14 +46,30 @@ export class Boardcontroller {
     const result = await this.boardService.createBoard(files);
     return HttpResponse.created(res, { body: result });
   }
-  @Post('/update')
-  @UseInterceptors(FileInterceptor('file'))
+  @ApiOperation({
+    summary: '게시글 수정',
+    description: '게시글을 수정한다.',
+  })
+  @ApiErrorResponseTemplate([
+    {
+      status: StatusCodes.NOT_FOUND,
+      errorFormatList: [HttpErrorConstants.CANNOT_FIND_BOARD],
+    },
+  ])
+  @UseAuthGuards()
+  @Patch('/update/:boardIdx')
+  @UseInterceptors(FilesInterceptor('files', 5))
   async updateBoard(
     @Res() res,
-    @Body() dto: { boardIdx: number; sequence: number },
-    @UploadedFile() file: Express.Multer.File,
+    @Body() dto: UpdateBoardDto,
+    @Param('boardIdx') boardIdx: number,
+    @UploadedFiles()
+    files: Array<Express.Multer.File>,
   ) {
-    const result = await this.boardService.updateBoard(file);
+    dto.deleteIdxArr = [243];
+    dto.modifySqenceArr = [3, 0, 1];
+    dto.FileIdx = [3];
+    const result = await this.boardService.updateBoard(dto, files, boardIdx);
     return HttpResponse.created(res, { body: result });
   }
 }
