@@ -115,7 +115,7 @@ export class BoardService {
       await queryRunner.release();
     }
   }
-  videoFunction = async (mediaFile) => {
+  videoFunction = async (mediaFile: Express.Multer.File) => {
     try {
       let url;
       let coverImgUrl;
@@ -124,8 +124,8 @@ export class BoardService {
         '_',
       )}`;
       const videoBuffer = mediaFile.buffer; //비디오 파일 버퍼
-      // const outputDir = process.env.VIDEOFOLDER; //비디오 저장 폴더 경로
-      const outputDir = '/Users/munjunho/Desktop/video';
+      const outputDir = process.env.VIDEOFOLDER; //비디오 저장 폴더 경로
+      // const outputDir = '/Users/munjunho/Desktop/video';
       const videoFolder = `${outputDir}/${fileName.replace(/\.[^/.]+$/, '')}`; //비디오가 저장될 폴더
       const videoBaseName = path.basename(fileName, path.extname(fileName));
       const videoPath = `${videoFolder}/${fileName}`;
