@@ -7,7 +7,6 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { UserModule } from './domains/user/user.module';
 import { LoggerMiddleware } from './core/middlewares/logger.middleware';
-import { ScheduleModule } from '@nestjs/schedule';
 import { BoardModule } from './domains/board/board.module';
 // import { EventsModule } from './events/events.module';
 @Module({

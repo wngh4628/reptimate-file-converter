@@ -25,7 +25,7 @@ import UseAuthGuards from '../auth/auth-guards/use-auth';
 
 @ApiTags(SwaggerTag.BOARD)
 @ApiCommonErrorResponseTemplate()
-@Controller('/board')
+@Controller('/conv/board')
 export class Boardcontroller {
   constructor(private readonly boardService: BoardService) {}
 

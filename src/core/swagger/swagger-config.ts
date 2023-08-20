@@ -26,7 +26,7 @@ export const swaggerConfig = new DocumentBuilder()
 
 export const initSwagger = async (app: INestApplication) => {
   const swaggerDocument = SwaggerModule.createDocument(app, swaggerConfig);
-  SwaggerModule.setup('api-docs', app, swaggerDocument, swaggerOptions);
+  SwaggerModule.setup('conv/api-docs', app, swaggerDocument, swaggerOptions);
 };
 
 // swagger 옵션 설정

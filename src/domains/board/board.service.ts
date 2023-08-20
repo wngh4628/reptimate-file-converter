@@ -164,7 +164,7 @@ export class BoardService {
         const fileStream = fs.createReadStream(filePath);
         const uploadParams = {
           Bucket: bucket,
-          Key: `test/${fileName}`,
+          Key: `board/${fileName}`,
           Body: fileStream,
         };
         if (path.extname(fileName) === '.m3u8') {
