@@ -19,7 +19,7 @@ import { User } from '../user/entities/user.entity';
 
 @ApiTags(SwaggerTag.AUTH)
 @ApiCommonErrorResponseTemplate()
-@Controller('/auth')
+@Controller('/conv/auth')
 export class AuthController {
   constructor(private authService: AuthService) {}
 

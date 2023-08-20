@@ -32,7 +32,7 @@ import { ApiErrorResponseTemplate } from 'src/core/swagger/apt-error-response';
 
 @ApiTags(SwaggerTag.USER)
 @ApiCommonErrorResponseTemplate()
-@Controller('/users')
+@Controller('/conv/users')
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
