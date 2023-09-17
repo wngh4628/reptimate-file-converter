@@ -1,4 +1,4 @@
-import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
+import { FilesInterceptor } from '@nestjs/platform-express';
 import { ApiCommonErrorResponseTemplate } from 'src/core/swagger/api-error-common-response';
 import { SwaggerTag } from 'src/core/swagger/swagger-tags';
 import { BoardService } from './board.service';
@@ -66,9 +66,9 @@ export class Boardcontroller {
     @UploadedFiles()
     files: Array<Express.Multer.File>,
   ) {
-    dto.deleteIdxArr = [243];
-    dto.modifySqenceArr = [3, 0, 1];
-    dto.FileIdx = [3];
+    // dto.deleteIdxArr = [243];
+    // dto.modifySqenceArr = [3, 0, 1];
+    // dto.FileIdx = [3];
     const result = await this.boardService.updateBoard(dto, files, boardIdx);
     return HttpResponse.created(res, { body: result });
   }

@@ -6,7 +6,6 @@ import { BoardRepository } from './repositories/board.repository';
 import { BoardImageRepository } from './repositories/board-image.repository';
 import { BoardCommentRepository } from './repositories/board-comment.repository';
 import { BoardReplyRepository } from './repositories/board-reply.repository';
-import { BoardBookmarkRepository } from './repositories/board-bookmark.repository';
 import { BoardCommercialRepository } from './repositories/board-commercial.repository';
 import { UserRepository } from '../user/repositories/user.repository';
 
@@ -17,7 +16,6 @@ import { UserRepository } from '../user/repositories/user.repository';
       BoardImageRepository,
       BoardReplyRepository,
       BoardCommentRepository,
-      BoardBookmarkRepository,
       BoardCommercialRepository,
       UserRepository,
     ]),

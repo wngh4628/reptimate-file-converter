@@ -6,7 +6,6 @@ import {
   Post,
   Body,
   Patch,
-  Delete,
   Res,
   UseInterceptors,
   UploadedFile,
@@ -15,13 +14,10 @@ import { UserService } from './user.service';
 import { CreateUserDto } from './dtos/create-user.dto';
 import { UpdateUserDto } from './dtos/update-user.dto';
 import { ApiBody, ApiOperation, ApiTags } from '@nestjs/swagger';
-import { VerifyEmailDto } from './dtos/verify-email.dto';
 import { User } from './entities/user.entity';
-import { AuthService } from '../auth/auth.service';
 import UseAuthGuards from '../auth/auth-guards/use-auth';
 import AuthUser from 'src/core/decorators/auth-user.decorator';
 import HttpResponse from 'src/core/http/http-response';
-import { DeleteUserDto } from './dtos/delete-user.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { SwaggerTag } from 'src/core/swagger/swagger-tags';
 import { ApiCommonErrorResponseTemplate } from 'src/core/swagger/api-error-common-response';

@@ -140,7 +140,7 @@ export class BoardService {
       const executeFfmpeg = promisify(exec);
 
       await executeFfmpeg(
-        `ffmpeg -i ${videoPath} -hls_time 10 -hls_list_size 0 ${outputPath}`,
+        `ffmpeg -i ${videoPath} -c:v h264_amf -b:v 2M -vf "scale=1280:-2" -hls_time 10 -hls_list_size 0 ${outputPath}`,
       );
 
       // 4. 동영상 첫 번째 프레임 캡처하여 커버 사진 만들기
