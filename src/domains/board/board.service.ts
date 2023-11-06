@@ -59,9 +59,9 @@ export class BoardService {
 
     try {
       await fileValidates(files);
-      const deleteArr = dto.deleteIdxArr;
-      const modifySqenceArr = dto.modifySqenceArr;
-      const fileIdxArr = dto.FileIdx;
+      const deleteArr = JSON.parse(dto.deleteIdxArr);
+      const modifySqenceArr: number[] = JSON.parse(dto.modifySqenceArr);
+      const fileIdxArr: number[] = JSON.parse(dto.FileIdx);
       //1. 기존 이미지 삭제
       for (let i = 0; i < deleteArr.length; i++) {
         await this.boardImageRepository.softDelete(deleteArr[i]);
@@ -84,8 +84,9 @@ export class BoardService {
         for (let j = 0; j < board.images.length; j++) {
           if (modifySqenceArr[i] === board.images[j].mediaSequence) {
             //기존 이미지 순서 인덱스 수정
-            board.images[j].mediaSequence = i;
-            await queryRunner.manager.save(board.images[j]);
+            const boardImage = BoardImage.from(board.images[j]);
+            boardImage.mediaSequence = i;
+            await queryRunner.manager.save(boardImage);
             break;
           } else if (files && j === board.images.length - 1) {
             //새로운 파일 추가 후, s3 업로드 및 db 수정
@@ -105,6 +106,25 @@ export class BoardService {
             result.boardIdx = boardIdx;
             await queryRunner.manager.save(result);
           }
+        }
+        // 기존 이미지가 없는 상태에서 추가
+        if (board.images.length === 0 && files) {
+          //새로운 파일 추가 후, s3 업로드 및 db 수정
+          const file = files[fileIdxArr.lastIndexOf(modifySqenceArr[i])];
+          let result;
+          const fileExtension = path.extname(file.originalname).toLowerCase();
+          if (fileExtension === '.mp4' || fileExtension === '.mov') {
+            result = await this.videoFunction(file);
+          } else if (
+            fileExtension === '.jpg' ||
+            fileExtension === '.jpeg' ||
+            fileExtension === '.png'
+          ) {
+            result = await this.uploadBoardImages(file);
+          }
+          result.mediaSequence = i;
+          result.boardIdx = boardIdx;
+          await queryRunner.manager.save(result);
         }
       }
       await queryRunner.commitTransaction();
@@ -140,7 +160,8 @@ export class BoardService {
       const executeFfmpeg = promisify(exec);
 
       await executeFfmpeg(
-        `ffmpeg -i ${videoPath} -c:v h264_amf -b:v 2M -vf "scale=1280:-2" -hls_time 10 -hls_list_size 0 ${outputPath}`,
+        // `ffmpeg -i ${videoPath} -c:v hevc_amf -b:v 2M -vf "scale=1280:-2" -hls_time 10 -hls_list_size 0 ${outputPath}`,
+        `ffmpeg -i ${videoPath} -c:v h264 -b:v 2M -vf "scale=1280:-2" -hls_time 10 -hls_list_size 0 ${outputPath}`,
       );
 
       // 4. 동영상 첫 번째 프레임 캡처하여 커버 사진 만들기

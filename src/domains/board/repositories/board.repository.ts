@@ -33,7 +33,6 @@ export class BoardRepository extends Repository<Board> {
     return boardListDto;
   }
   updateReplyCnt(boardIdx: number, commentCnt: number) {
-    console.log('boardIdx', boardIdx);
     this.createQueryBuilder()
       .update(Board)
       .set({ commentCnt })

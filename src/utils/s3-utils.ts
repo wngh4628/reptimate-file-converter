@@ -35,7 +35,6 @@ export const asyncUploadToS3 = async (
         Body: file,
       },
       async function (err, data) {
-        console.log(err);
         if (err) {
           throw new BadRequestException('file is not properly uploaded');
         }

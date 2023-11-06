@@ -48,8 +48,4 @@ export class Board extends BaseEntity {
     board.description = description;
     return board;
   }
-  updateFromDto(dto: UpdateBoardDto) {
-    this.title = dto.title;
-    this.description = dto.description;
-  }
 }

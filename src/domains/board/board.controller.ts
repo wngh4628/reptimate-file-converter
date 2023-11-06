@@ -66,9 +66,8 @@ export class Boardcontroller {
     @UploadedFiles()
     files: Array<Express.Multer.File>,
   ) {
-    // dto.deleteIdxArr = [243];
-    // dto.modifySqenceArr = [3, 0, 1];
-    // dto.FileIdx = [3];
+    console.log(dto);
+    
     const result = await this.boardService.updateBoard(dto, files, boardIdx);
     return HttpResponse.created(res, { body: result });
   }

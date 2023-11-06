@@ -1,23 +1,22 @@
-import { ApiProperty, PartialType } from '@nestjs/swagger';
-import { createBoardDto } from './create-board.dto';
+import { ApiProperty } from '@nestjs/swagger';
 
-export class UpdateBoardDto extends PartialType(createBoardDto) {
+export class UpdateBoardDto {
   @ApiProperty({
     description: '수정할 시퀀스 값을 넣어 주세요.',
     default: [3, 0, 2],
   })
-  modifySqenceArr: number[];
+  modifySqenceArr: string;
 
   @ApiProperty({
     description: '삭제할 미디어 Idx를 넣어주세요.',
     default: [88],
   })
-  deleteIdxArr: number[];
+  deleteIdxArr: string;
 
   @ApiProperty({
     description: '파일 IDX를 넣어주세요.',
-    default: [4, 5],
+    default: [3],
   })
-  FileIdx: number[];
+  FileIdx: string;
   title: string;
 }
