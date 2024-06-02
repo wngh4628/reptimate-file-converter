@@ -66,8 +66,6 @@ export class Boardcontroller {
     @UploadedFiles()
     files: Array<Express.Multer.File>,
   ) {
-    console.log(dto);
-    
     const result = await this.boardService.updateBoard(dto, files, boardIdx);
     return HttpResponse.created(res, { body: result });
   }
